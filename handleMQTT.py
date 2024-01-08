@@ -1,30 +1,35 @@
 import paho.mqtt.client as mqtt
 
-class MQTT:
-    def __init__(self, broker_address, port=1883):
-        # self.topic = topic
+class MQTT:  #Class to handle MQTT events
+    def __init__(self, BROKER_ADDRESS, port):
         self.client = mqtt.Client()
-        # self.client.on_connect = self.on_connect
+        self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.connect(broker_address, port, 60)
+        if USE_CREDS == "true":
+          self.client.username_pw_set(MQTT_USER, MQTT_PASS)
+        self.client.connect(BROKER_ADDRESS, port, 60)
         self.client.loop_start()  # Start a background thread to handle MQTT events
 
-    def publish(self,topic, message):
+    def on_connect(self, client, userdata, flags, rc):
+        if rc==0:
+            return True
+            # print("connected OK Returned code=",rc)
+        else:
+            return False
+            # print("Bad connection Returned code=",rc)    
+
+    def publish(self,topic, message):   # Publish Topics
         self.client.publish(topic, message)
         self.subscribe(topic)
         return True
 
-    def subscribe(self,topic):
-        print(f"Subscriber to {topic}")
+    def subscribe(self,topic):  # Subscribe to Topics
+        # print(f"Subscribed to: {topic}")
         self.client.subscribe(topic)
+        return True
 
-    def on_message(self, client, userdata, msg):
-        data = str(msg.payload)
-        print(f"Received message: [{msg.topic}] : {data}")
-        # Do something with the received message
-
-    # def on_connect(self, client, userdata, flags, rc):
-    #     print(f"Connected with result code {rc}")
-    #     self.client.subscribe(self.topic)    
+    def unsubscribe(self, topic):
+        self.client.unsubscribe(topic)
+        return True    
 
 
